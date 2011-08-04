@@ -131,6 +131,31 @@
 			return true;
 		}
 		
+		,unsubscribeTokenFromInstance= function(instance, subscriptionToken ) {
+			var
+				tokenIndex= instance.subscribersTokenIndex[ subscriptionToken ]
+				,message= instance.messageSubscriptionTokenIndex[ subscriptionToken ]
+				,unsubscribedSubscriber
+			;
+			
+			unsubscribedSubscriber= instance.subscriptionList[ message ].splice(tokenIndex, 1)[0]
+			
+	        if(instance.subscriptionList[ message ] === 0) {
+				delete instance.subscriptionList[ message ];
+			}
+			
+			delete instance.subscribersTokenIndex[ subscriptionToken ];
+			delete instance.messageSubscriptionTokenIndex[ subscriptionToken ];
+			
+			return unsubscribedSubscriber;
+		}
+		,addSubscriberToInstance= function(instance, message, subscriber){
+			// double index reference for easier unsubscriptions
+			instance.subscribersTokenIndex[ subscriptionToken ]= instance.subscriptionList[ message ].push( subscriber ) - 1;
+			instance.messageSubscriptionTokenIndex[ subscriptionToken ]= message;
+			
+			return subscriptionToken;
+		}
 		// default settings
 		,defaultSettings= {
 			// keep track of all the messages sent to the broker
@@ -178,15 +203,7 @@
 				,i
 				,subscribersLen
 				,pony= this
-				,appendSubscriber= function(subscriber){
-					// double index reference for easier unsubscriptions
-					pony.subscribersTokenIndex[ subscriptionToken ]= pony.subscriptionList[ message ].push( subscriber ) - 1;
-					pony.messageSubscriptionTokenIndex[ subscriptionToken ]= message;
-					
-					subscriptionToken+= 1;
-					
-					return subscriptionToken;
-				}
+				,returnSubscriptionToken
 			;
 			
 			if(!this.subscriptionList.hasOwnProperty(message)) {
@@ -196,23 +213,52 @@
 			if(this.settings.queueMessage === true && this.messageQueue[ message ] && this.messageQueue[ message ].length) {
 				// deliver previously published messages to new subscribers, asynchronously by default
 				while(messageQueueLen--) {
-					publish(this, "message", this.messageQueue[ message ][ messageQueueLen ], false, subscribers);
+					publish(this, message, this.messageQueue[ message ][ messageQueueLen ], false, subscribers);
 				}
 			}
 			
 			if(subscribers.length > 1) {
-				
-				for(i= 0, subscribersLen= subscribers; i < subscribersLen; i++) {
-					subscriptionTokenList.push(appendSubscriber(subscribers[i]));
+				for(i= 0, subscribersLen= subscribers.length; i < subscribersLen; i++) {
+					subscriptionTokenList.push(addSubscriberToInstance(this, message, subscribers[i]));
+					subscriptionToken+= 1;
 				}
 				
 				return subscriptionTokenList;
 				
 			} else {
-				
-				return appendSubscriber(subscribers[0]);
-				
+				returnSubscriptionToken= addSubscriberToInstance(this, message, subscribers[0]);
+				subscriptionToken+= 1;
+				return returnSubscriptionToken;
 			}
+		}
+		
+		/**
+		 *  Pony.unsubscribe( subscriptionToken ) -> Function | Array
+		 *  - token (String | Array): a subscription token or a list of subscription tokens
+		 *  This method unsubscribes subscribers with the associated subscription token.
+		 *  If an array of subscription token is provided, all the token will be used to unsubscribe
+		 *  the subscribers.
+		 *
+		 *  The return value can be the unsubscribed function or an array of unsubscribed functions
+		**/
+		,unsubscribe: function(subscriptionToken){
+			var
+				subscriptionTokenLen
+				,unsubscribedCallbacks
+			;
+			
+			if(!subscriptionToken.length) {
+				unsubscribedCallbacks= unsubscribeTokenFromInstance(this, subscriptionToken);
+			} else {
+				subscriptionTokenLen= subscriptionToken.length;
+				unsubscribedCallbacks= [];
+				
+				while(subscriptionTokenLen--) {
+					unsubscribedCallbacks.push(unsubscribeTokenFromInstance(this, subscriptionToken[ subscriptionTokenLen ]));
+				}
+			}
+			
+			return unsubscribedCallbacks;
 		}
 		
 		/**
