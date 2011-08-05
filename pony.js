@@ -9,7 +9,7 @@
 
 ;(function(context, undefined){
 	var
-		Pony= function(settings){
+        Pony= function(settings){
 			var
 				instance= this
 			;
@@ -42,16 +42,36 @@
 		,messageQueueObjectId= 0
 		,subscriptionToken= 0
 		
-		// private shared methods
-		,publish= function(instance, message, data, synchronousPublish, subscribers){
+        /**
+         *
+         * @param object {
+         *      instance
+         *      message
+         *      data
+         *      synchronousPublish
+         *      subscribers
+         * }
+         * @param callback
+         */
+		,publish= function(kwargs){
 			var
 				messageQueue
+                ,instance= kwargs.instance
+                ,message= kwargs.message
+                ,data= kwargs.data
+                ,synchronousPublish= kwargs.synchronousPublish
+                ,subscribers= kwargs.subscribers
+
 				,publicationObject
 				,returnValues= []
 				,subscribersLen
+                ,callbackQueue= []
+                ,len
+                ,i
 				,throwException= function(exception){
 					throw exception;
 				}
+                ,deliveredMessageCount= 0
 				,deliverMessage= function(subscriber, data){
 					var
 						returnValue
@@ -62,14 +82,21 @@
 					} catch(e) {
 						setTimeout(throwException, 0, e);
 						return;
-					}
+					} finally {
+                        deliveredMessageCount+= 1;
+                    }
 					
 					if(synchronousPublish) {
 						returnValues.push(returnValue);
 					} else if(instance.settings.queueMessages === true && publicationObject) {
 						publicationObject.returnValues.push(returnValue);
+
+                        if(deliveredMessageCount == subscribers.length && callbackQueue.length !== 0) {
+                            for(i= 0, len= callbackQueue.length; i < len; i++) {
+                                callbackQueue[i](publicationObject.returnValues);
+                            }
+                        }
 					}
-					
 				}
 			;
 			
@@ -102,7 +129,13 @@
 					,data: data
 					// the amount of callbacks are subscribed to this particular message, right now
 					,subscriptionCount: subscribersLen
+                    // an array which is filled with all the return values taken from the
 					,returnValues: []
+                    // a possible callback function which wil be fired after all the current subscribers will be
+                    // fired
+                    ,complete: function(fn){
+                        callbackQueue.push(fn);
+                    }
 				};
 				
 				// push the current publication object on to the queue
@@ -217,7 +250,13 @@
                 messageQueueLen= this.messageQueue[ message ].length;
 				// deliver previously published messages to new subscribers, asynchronously by default
 				while(messageQueueLen--) {
-					publish(this, message, this.messageQueue[ message ][ messageQueueLen ].data, false, subscribers);
+					publish({
+                        instance: this
+                        ,message: message
+                        ,subscribers: this.messageQueue[ message ][ messageQueueLen ].data
+                        ,synchronousPublish: false
+                        ,subscribers: subscribers
+                    }, null);
 				}
 			}
 			
@@ -280,8 +319,15 @@
 			var
 				data= Array.prototype.slice.call(arguments).slice(1)
 			;
-			
-			return publish(this, message, data, false);
+
+			// TODO: callback as argument or as attribute of the passed publicationObject?
+
+			return publish({
+                instance: this
+                ,message: message
+                ,data: data
+                ,synchronousPublish: false
+            }, null);
 		}
 		
 		/**
@@ -295,7 +341,12 @@
 				data= Array.prototype.slice.call(arguments).slice(1)
 			;
 			
-			return publish(this, message, data, true);
+			return publish({
+                instance: this
+                ,message: message
+                ,data: data
+                ,synchronousPublish: true
+            }, null);
 		}
 		
 		/**

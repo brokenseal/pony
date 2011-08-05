@@ -316,15 +316,15 @@ $(function(){
         ponyExpress.subscribe(messageName, spy1);
         ponyExpress.subscribe(messageName2, spy2, spy3);
 
-        firstPublicationObject= ponyExpress.publish(messageName, firstArgument);
-        secondPublicationObject= ponyExpress.publish(messageName2, secondArgument);
+        ponyExpress.publish(messageName, firstArgument).complete(function(returnValues){
+            deepEqual(returnValues, expectedFirstPublicationObjectReturnValues, "Test return value on first publication.");
 
-        // a callback would be much better...
-        setTimeout(function(){
-            deepEqual(firstPublicationObject.returnValues, expectedFirstPublicationObjectReturnValues, "Test return value on first publication.");
-            deepEqual(secondPublicationObject.returnValues, expectedSecondPublicationObjectReturnValues, "Test return value on second publication.");
-
-            start();
-        }, 500)
+            // I needed this nested callback calls for the 'start' method provided by QUnit to actually work properly
+            ponyExpress.publish(messageName2, secondArgument).complete(function(returnValues){
+                deepEqual(returnValues, expectedSecondPublicationObjectReturnValues, "Test return value on second publication.");
+                
+                start();
+            });
+        });
     });
 });
