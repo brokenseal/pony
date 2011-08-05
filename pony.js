@@ -13,32 +13,32 @@
 			var
 				instance= this
 			;
-			
+		    
 			// allow instantiation without the new keyword
 			if( !( this instanceof Pony ) ) {
 				return new Pony(settings);
 			}
-			
+
 			// private attribute, accessible only from the settings method
 			this.settings= mergeWithDefaultSettings(settings || {});
-			
+
 			if(this.settings.queueMessages === true) {
 				this.messageQueue= {};
 			}
-			
+
 			this.subscriptionList= {};
 			this.subscriptionQueue= {};
 			this.subscribersTokenIndex= {};
 			this.messageSubscriptionTokenIndex= {};
-			
+
 			if(this.settings.clearMessageQueueEvery) {
 				this.startClearingMessageQueue();
 			}
-			
+
 			return this;
 		}
 		
-		// private shared attributes
+		// private shared variables
 		,messageQueueObjectId= 0
 		,subscriptionToken= 0
 		
@@ -187,7 +187,9 @@
 	;
 	
 	Pony.prototype= {
-		
+
+        // force contructor to be the Pony function
+        constructor: Pony
 		/**
 		 *  Pony.subscribe( message [, *args ] ) -> String | Array
 		 *  - message (String): the message to which all the given function will be subscribed to
@@ -196,7 +198,7 @@
 		 *  a subscription token or a list of subscription tokens, with which it is possible
 		 *  to unsubscribe all the functions
 		**/
-		subscribe: function(message){
+		,subscribe: function(message){
 			var
 				subscribers= Array.prototype.slice.call(arguments).slice(1)
 				,subscriptionTokenList= []
@@ -204,16 +206,18 @@
 				,subscribersLen
 				,pony= this
 				,returnSubscriptionToken
+                ,messageQueueLen
 			;
 			
 			if(!this.subscriptionList.hasOwnProperty(message)) {
 				this.subscriptionList[ message ]= [];
 			}
-			
-			if(this.settings.queueMessage === true && this.messageQueue[ message ] && this.messageQueue[ message ].length) {
+
+			if(this.settings.queueMessages === true && this.messageQueue[ message ] && this.messageQueue[ message ].length) {
+                messageQueueLen= this.messageQueue[ message ].length;
 				// deliver previously published messages to new subscribers, asynchronously by default
 				while(messageQueueLen--) {
-					publish(this, message, this.messageQueue[ message ][ messageQueueLen ], false, subscribers);
+					publish(this, message, this.messageQueue[ message ][ messageQueueLen ].data, false, subscribers);
 				}
 			}
 			
