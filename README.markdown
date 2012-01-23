@@ -1,6 +1,6 @@
 # Pony: a pub/sub javascript broker
 
-I creted this project after having forked and modified this other project https://github.com/brokenseal/PubSubJS but still didn't like it.
+I created this project after having forked and modified this other project https://github.com/brokenseal/PubSubJS but still didn't like it.
 
 Pony is a class and it allows you to instantiate new brokers if needed. As a library it gives you access to an already instantiated broker called pony (no capital letter).
 This library allows you to:
@@ -14,6 +14,9 @@ Since I wrote it right after having modified mroderick's own library, a lot of t
 * No dependencies
 * No subscriber modification
 * No use of DOM
+
+The current version is 1.0 and it's final. No more changes are going to be applied to it.
+
 
 ## API
 
@@ -67,18 +70,20 @@ It returns (??? can't remember...)
 
 
 ###Pony.startClearingMessageQueue( ) -> Pony instance
-####No arguments.
 This method starts clearing message queue, based on the clearMessageQueueEvery setting
 It returns the class instance.
 
 
 ###Pony.stopClearingMessageQueue( ) -> Pony instance
-####No arguments.
 This method stops the clearing of the message queue.
 It returns the class instance.
 
 
 ###Pony.clearMessages( ) -> Pony instance
-####No arguments.
 This method clears the message queue.
 It returns the class instance.
+
+
+##Learn by example
+
+I will write some example in the next few days but for now have a look at the unit tests.
