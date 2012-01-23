@@ -19,7 +19,7 @@ Since I wrote it right after having modified mroderick's own library, a lot of t
 
 ###Pony.subscribe( message [, *args ] ) -> String | Array
 
-Arguments:
+Arguments
     * message (String): the message to which all the given function will be subscribed to
     * *args: any amount of functions that will be subscribed
 
@@ -30,7 +30,7 @@ to unsubscribe all the functions
 
 
 ###Pony.unsubscribe( subscriptionToken ) -> Function | Array
-Arguments:
+Arguments
     * subscriptionToken (String | Array): a subscription token or a list of subscription tokens
 
 This method unsubscribes subscribers with the associated subscription token.
@@ -43,7 +43,7 @@ The return value can be the unsubscribed function or an array of unsubscribed fu
 
 ###Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object
 
-Arguments:
+Arguments
     * message (String): the message to publish on the current broker
     * *args: any amount of arguments, past the message
 
@@ -57,7 +57,7 @@ or it returns  true boolean value for successfull calls
 
 ###Pony.publishSync( message [, *args ] ) -> Boolean
 
-Arguments:
+Arguments
     * message (String): the message to publish on the current broker
     * *args: any amount of arguments, past the message
 
