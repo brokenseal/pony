@@ -8,7 +8,7 @@ This library allows you to:
     * unsubscribe previously subscribed functions using returning tokens
     * get notified when all the subscribers are done working on the published message, which is something a pub/sub system usually does not allow you to know
 
-Since I wrote it right after having modified mroderick's own library, a lot of things are inspired by it.
+Since I wrote it right after having modified mroderick's own library, a lot of things are inspired by it and they both share the same goals.
 
 ## Goals
 * No dependencies
@@ -17,7 +17,8 @@ Since I wrote it right after having modified mroderick's own library, a lot of t
 
 ## API
 
-*Pony.subscribe( message [, *args ] ) -> String | Array*
+###Pony.subscribe( message [, *args ] ) -> String | Array
+
 Arguments:
 * message (String): the message to which all the given function will be subscribed to
 * *args: any amount of functions that will be subscribed
@@ -27,7 +28,8 @@ a subscription token or a list of subscription tokens, with which it is possible
 to unsubscribe all the functions
 
 
-*Pony.unsubscribe( subscriptionToken ) -> Function | Array*
+
+###Pony.unsubscribe( subscriptionToken ) -> Function | Array
 Arguments:
 * subscriptionToken (String | Array): a subscription token or a list of subscription tokens
 This method unsubscribes subscribers with the associated subscription token.
@@ -37,7 +39,8 @@ the subscribers.
 The return value can be the unsubscribed function or an array of unsubscribed functions
 
 
-*Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object*
+
+###Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object
 
 Arguments:
 * message (String): the message to publish on the current broker
@@ -51,7 +54,7 @@ it returns a Publication object if a queue of messages is keps inside the broker
 or it returns  true boolean value for successfull calls
 
 
-*Pony.publishSync( message [, *args ] ) -> Boolean*
+###Pony.publishSync( message [, *args ] ) -> Boolean
 
 Arguments:
 * message (String): the message to publish on the current broker
@@ -61,18 +64,19 @@ This method works pretty much the same way the publish method works, except it's
 It returns (??? can't remember...)
 
 
-*Pony.startClearingMessageQueue( ) -> Pony instance*
+
+###Pony.startClearingMessageQueue( ) -> Pony instance
 No arguments.
 This method starts clearing message queue, based on the clearMessageQueueEvery setting
 It returns the class instance.
 
 
-* Pony.stopClearingMessageQueue( ) -> Pony instance*
+###Pony.stopClearingMessageQueue( ) -> Pony instance
 This method stops the clearing of the message queue.
 It returns the class instance.
 
 
-*Pony.clearMessages( ) -> Pony instance*
+###Pony.clearMessages( ) -> Pony instance
 No arguments.
 This method clears the message queue.
 It returns the class instance.
