@@ -20,8 +20,8 @@ Since I wrote it right after having modified mroderick's own library, a lot of t
 ###Pony.subscribe( message [, *args ] ) -> String | Array
 
 Arguments
-    * message (String): the message to which all the given function will be subscribed to
-    * *args: any amount of functions that will be subscribed
+1. message (String): the message to which all the given function will be subscribed to
+2. *args: any amount of functions that will be subscribed
 
 This method subscribes all the given functions to this message and returns
 a subscription token or a list of subscription tokens, with which it is possible
@@ -31,7 +31,7 @@ to unsubscribe all the functions
 
 ###Pony.unsubscribe( subscriptionToken ) -> Function | Array
 Arguments
-    * subscriptionToken (String | Array): a subscription token or a list of subscription tokens
+1. subscriptionToken (String | Array): a subscription token or a list of subscription tokens
 
 This method unsubscribes subscribers with the associated subscription token.
 If an array of subscription token is provided, all the token will be used to unsubscribe
@@ -44,8 +44,8 @@ The return value can be the unsubscribed function or an array of unsubscribed fu
 ###Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object
 
 Arguments
-    * message (String): the message to publish on the current broker
-    * *args: any amount of arguments, past the message
+1. message (String): the message to publish on the current broker
+2. *args: any amount of arguments, past the message
 
 This method publishes a particular message with any amount of data given to the function
 It then returns a false boolean if no subscriber is found for this message,
@@ -58,8 +58,8 @@ or it returns  true boolean value for successfull calls
 ###Pony.publishSync( message [, *args ] ) -> Boolean
 
 Arguments
-    * message (String): the message to publish on the current broker
-    * *args: any amount of arguments, past the message
+1. message (String): the message to publish on the current broker
+2. *args: any amount of arguments, past the message
 
 This method works pretty much the same way the publish method works, except it's synchronous.
 It returns (??? can't remember...)
