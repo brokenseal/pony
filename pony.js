@@ -370,7 +370,7 @@
 		}
 		
 		/**
-		 *  Pony.startClearingMessageQueue( ) -> Pony instance
+		 *  Pony.stopClearingMessageQueue( ) -> Pony instance
 		 *  It stop clearing message queue
 		**/
 		,stopClearingMessageQueue: function(){
@@ -383,7 +383,7 @@
 		}
 		
 		/**
-		 *  Pony.startClearingMessageQueue( ) -> Pony instance
+		 *  Pony.clearMessages( ) -> Pony instance
 		 *  It clears the message queue
 		**/
 		,clearMessageQueue: function(){

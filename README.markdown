@@ -17,7 +17,28 @@ Since I wrote it right after having modified mroderick's own library, a lot of t
 
 ## API
 
-_Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object _
+*Pony.subscribe( message [, *args ] ) -> String | Array*
+Arguments:
+* message (String): the message to which all the given function will be subscribed to
+* *args: any amount of functions that will be subscribed
+
+This method subscribes all the given functions to this message and returns
+a subscription token or a list of subscription tokens, with which it is possible
+to unsubscribe all the functions
+
+
+*Pony.unsubscribe( subscriptionToken ) -> Function | Array*
+Arguments:
+* subscriptionToken (String | Array): a subscription token or a list of subscription tokens
+This method unsubscribes subscribers with the associated subscription token.
+If an array of subscription token is provided, all the token will be used to unsubscribe
+the subscribers.
+
+The return value can be the unsubscribed function or an array of unsubscribed functions
+
+
+*Publish.publish ( message [, *args ] ) -> Boolean | Array | Publication object*
+
 Arguments:
 * message (String): the message to publish on the current broker
 * *args: any amount of arguments, past the message
@@ -28,3 +49,30 @@ it returns an Array of returned values from the subscribers called,
 it returns a Publication object if a queue of messages is keps inside the broker
 (please refer to the Publication object specification inside the private publish function)
 or it returns  true boolean value for successfull calls
+
+
+*Pony.publishSync( message [, *args ] ) -> Boolean*
+
+Arguments:
+* message (String): the message to publish on the current broker
+* *args: any amount of arguments, past the message
+
+This method works pretty much the same way the publish method works, except it's synchronous.
+It returns (??? can't remember...)
+
+
+*Pony.startClearingMessageQueue( ) -> Pony instance*
+No arguments.
+This method starts clearing message queue, based on the clearMessageQueueEvery setting
+It returns the class instance.
+
+
+* Pony.stopClearingMessageQueue( ) -> Pony instance*
+This method stops the clearing of the message queue.
+It returns the class instance.
+
+
+*Pony.clearMessages( ) -> Pony instance*
+No arguments.
+This method clears the message queue.
+It returns the class instance.
