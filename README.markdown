@@ -86,4 +86,65 @@ It returns the class instance.
 
 ##Learn by example
 
-I will write some example in the next few days but for now have a look at the unit tests.
+Here is a list of possible applications of the Pony pub/sub library.
+
+### Notify everyone interested that a specific ajax request is completed
+
+    // file app.js
+    pony.subscribe('getStuffCompleted', function(data){
+        // do some stuff
+    });
+
+    // file db.js
+    pony.subscribe('getStuffCompleted', function(data){
+        // do some other stuff
+    });
+
+    // file remote_communications.js
+    $.get('/api/get_stuff.json', function(data){
+
+        // do stuff
+
+        pony.publish('getStuffCompleted', data);
+
+        // update ui
+    });
+
+This is a very basic example on how Pony allows you to decouple code and let some parts of your code know about some
+new data coming in without having to touch the code in that particular ajax call.
+
+Let's now see a similar example using a specific list of messages defined somewhere else
+
+    // file messages.js
+    mynamespace.messages = {
+
+        getStuffCompleted: {
+            name: '' // the actual message name, make sure it's unique
+            ,provides: 'json data' // a short description of the data that this message provides
+        }
+        ,anchorsUpdateComplete: {
+            name: '' // the actual message name, make it unique
+            ,provides: 'a list of anchor elements' // a short description of the data that this message provides
+        }
+    };
+
+    // file dom_manipulation.js
+    mynamespace.dom.updateFooter = function(){
+        var nodes = document.getElementsByTagName('a');
+
+        // do some UI stuff
+
+        pony.publish(mynamespace.messages.getStuffCompleted.name, nodes);
+    };
+
+    // file app.js
+    mynamespace.updatedAnchorsCache = {};
+
+    pony.subscribe(mynamespace.messages.getStuffCompleted.name, function(anchorList){
+        var anchorListLen = anchorList.length;
+
+        while(anchorListLen--) {
+            // let's assume that all anchors have a unique id...
+            mynamespace.updatedAnchorsCache[anchorList[anchorListLen].getAttribute('id')] = anchorList[anchorListLen];
+        }
+    });
