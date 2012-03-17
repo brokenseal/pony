@@ -101,14 +101,15 @@
 			;
 			
 			subscribers= subscribers || instance.subscriptionList[ message ];
-			subscribersLen= subscribers.length;
-			
+
 			// if there are no subscribers available for this particular message,
 			// return false
 			if(!subscribers || !subscribers.length) {
 				return false;
 			}
-			
+
+            subscribersLen= subscribers.length;
+
 			// if the user wants the messages to be queued
 			if(instance.settings.queueMessages === true) {
 				// if the message queue for this particular message does not exist yet
