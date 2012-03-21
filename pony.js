@@ -68,9 +68,6 @@
                 ,callbackQueue= []
                 ,len
                 ,i
-                ,throwException= function(exception){
-                    throw exception;
-                }
                 ,deliveredMessageCount= 0
                 ,deliverMessage= function(subscriber, data){
                     var
@@ -80,7 +77,9 @@
                     try {
                         returnValue= subscriber.apply(context, data);
                     } catch(e) {
-                        setTimeout(throwException, 0, e);
+                        setTimeout(function(){
+                            throw e;
+                        }, 0);
                         return;
                     } finally {
                         deliveredMessageCount+= 1;
@@ -152,7 +151,11 @@
                 while(subscribersLen--) {
                     // deliver message whenever possible, without blocking any
                     // other js or the  browser UI ( http://ejohn.org/blog/how-javascript-timers-work/ )
-                    setTimeout(deliverMessage, 0, subscribers[subscribersLen], data)
+                    setTimeout((function(subscriber, data){
+                        return function(){
+                            deliverMessage(subscriber, data);
+                        };
+                    })(subscribers[subscribersLen], data), 0);
                 }
             }
             
