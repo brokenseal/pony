@@ -1,5 +1,7 @@
 # Pony: a pub/sub javascript broker
 
+[![endorse](http://api.coderwall.com/brokenseal/endorsecount.png)](http://coderwall.com/brokenseal)
+
 I created this project after having forked and modified this other project https://github.com/brokenseal/PubSubJS but still didn't like it.
 
 Pony is a class and it allows you to instantiate new brokers if needed. As a library it gives you access to an already instantiated broker called pony (no capital letter).
