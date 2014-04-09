@@ -1,6 +1,6 @@
 $(function(){
     var
-        asyncTestTimeout= 5000
+        asyncTestTimeout= 1000
     ;
 	
 	module("[ -- CLASS TESTS -- ]");
@@ -43,8 +43,9 @@ $(function(){
             ponyExpress= Pony()
             ,spy= sinon.spy()
             ,messageName= "my-message"
-            ,subscriptionToken= ponyExpress.subscribe(messageName, spy)
         ;
+
+        ponyExpress.subscribe(messageName, spy);
 		
         ok(ponyExpress.subscriptionList[ messageName ], "Subscription list for this particular message must exist");
         equal(ponyExpress.subscriptionList[ messageName ].length, 1, "Subscription list for this particular message must be one only");
@@ -61,7 +62,7 @@ $(function(){
 
         stop(asyncTestTimeout);
         
-        ponyExpress.subscribe(messageName, spy)
+        ponyExpress.subscribe(messageName, spy);
         ponyExpress.publish(messageName);
         ponyExpress.subscribe(messageName, laterSpy);
 
@@ -83,8 +84,6 @@ $(function(){
 		var
 			ponyExpress= Pony()
 			,spy= sinon.spy()
-			,spy2= sinon.spy()
-			,spy3= sinon.spy()
 			,messageName= "my-message"
 			,subscriptionToken= ponyExpress.subscribe(messageName, spy)
 		;
@@ -95,7 +94,7 @@ $(function(){
 		equal(ponyExpress.subscriptionList[ messageName ].length, 0, "Subscription list for this particular message must not exist");
 	});
 	
-	test("Callbacks multiple unsubscribtion", 2, function(){
+	test("Callbacks multiple unsubscription", 2, function(){
 		var
 			ponyExpress= Pony()
 			,spy1= sinon.spy()
@@ -122,11 +121,12 @@ $(function(){
 			,messageName= "my-message"
             ,messageName2= "my-message-2"
             ,messageName3= "my-message-3"
-			,subscriptionToken= ponyExpress.subscribe(messageName, spy)
-			,subscriptionToken= ponyExpress.subscribe(messageName2, spy2)
-			,subscriptionToken= ponyExpress.subscribe(messageName3, spy3)
 		;
-		
+
+        ponyExpress.subscribe(messageName, spy);
+        ponyExpress.subscribe(messageName2, spy2);
+        ponyExpress.subscribe(messageName3, spy3);
+
 		// publish the first mess
 		ponyExpress.publishSync(messageName);
 		
@@ -159,9 +159,9 @@ $(function(){
 			,spy2= sinon.spy()
 			,spy3= sinon.spy()
 			,messageName= "my-message"
-			,subscriptionToken= ponyExpress.subscribe(messageName, spy1, spy2, spy3)
 		;
-		
+
+        ponyExpress.subscribe(messageName, spy1, spy2, spy3);
 		ponyExpress.publishSync(messageName);
 		
 		ok(spy1.calledOnce, "Subscriber 1 must be called once.");
@@ -179,9 +179,10 @@ $(function(){
 			ponyExpress= Pony()
 			,spy= sinon.spy()
 			,messageName= "my-message"
-			,subscriptionToken= ponyExpress.subscribe(messageName, spy)
 		;
-		
+
+        ponyExpress.subscribe(messageName, spy);
+
 		stop(asyncTestTimeout);
 		
 		ponyExpress.publish(messageName);
@@ -233,9 +234,10 @@ $(function(){
             ,messageName2= "my-message-2"
             ,firstArgument= 1
             ,secondArgument= 2
-            ,subscriptionToken= ponyExpress.subscribe(messageName, spy1)
-            ,subscriptionToken= ponyExpress.subscribe(messageName2, spy2, spy3)
         ;
+
+        ponyExpress.subscribe(messageName, spy1);
+        ponyExpress.subscribe(messageName2, spy2, spy3);
 
         stop(asyncTestTimeout);
 
@@ -305,8 +307,6 @@ $(function(){
             ,messageName2= "my-message-2"
             ,firstArgument= 1
             ,secondArgument= 2
-            ,firstPublicationObject
-            ,secondPublicationObject
             ,expectedFirstPublicationObjectReturnValues= [ (firstArgument + additionalArgument1) ]
             ,expectedSecondPublicationObjectReturnValues= [ (secondArgument + additionalArgument2), (secondArgument + additionalArgument3) ]
         ;
@@ -326,5 +326,27 @@ $(function(){
                 start();
             });
         });
+    });
+
+    module("[ -- REGRESSION TESTS -- ]");
+
+    test("Destroy method needs to dispose of active async calls", 1, function(){
+        var
+            ponyExpress= Pony()
+            ,messageName= 'test'
+            ,spy = sinon.spy()
+        ;
+
+        stop(asyncTestTimeout);
+
+        ponyExpress.subscribe(messageName, spy);
+        ponyExpress.publish(messageName);
+
+        ponyExpress.destroy();
+
+        setTimeout(function(){
+            ok(!spy.called, "Correctly disposed of async calls");
+            start();
+        }, 0);
     });
 });

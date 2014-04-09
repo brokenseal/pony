@@ -11,7 +11,8 @@
     var
         Pony= function(settings){
             var
-                instance= this
+                messageListLen
+                ,message
                 ;
 
             // allow instantiation without the new keyword
@@ -30,9 +31,20 @@
             this.subscriptionQueue= {};
             this.subscribersTokenIndex= {};
             this.messageSubscriptionTokenIndex= {};
+            this.asyncTimeoutIds = [];
 
             if(this.settings.clearMessageQueueEvery) {
                 this.startClearingMessageQueue();
+            }
+
+            if(this.settings.messageList){
+                this.messages = {};
+                messageListLen = this.settings.messageList.length;
+
+                while(messageListLen--){
+                    message = this.settings.messageList[messageListLen];
+                    this.messages[message] = message;
+                }
             }
 
             return this;
@@ -75,7 +87,7 @@
                         ;
 
                     try {
-                        returnValue= subscriber.apply(context, data);
+                        returnValue= subscriber.apply(instance, data);
                     } catch(e) {
                         setTimeout(function(){
                             throw e;
@@ -87,7 +99,7 @@
 
                     if(synchronousPublish) {
                         returnValues.push(returnValue);
-                    } else if(instance.settings.queueMessages === true && publicationObject) {
+                    } else if(instance.settings && instance.settings.queueMessages === true && publicationObject) {
                         publicationObject.returnValues.push(returnValue);
 
                         if(deliveredMessageCount == subscribers.length && callbackQueue.length !== 0) {
@@ -96,14 +108,15 @@
                             }
                         }
                     }
-                },
-                avoidAddingToMessageQeue = false
+                }
+                ,avoidAddingToMessageQueue = false
+                ,timeoutId
                 ;
 
-            if(cb !== undefined && toString.call(cb) == "[object Boolean]" && cb == true){
-                avoidAddingToMessageQeue = true;
+            if(cb !== undefined && Object.prototype.toString.call(cb) == "[object Boolean]" && cb == true){
+                avoidAddingToMessageQueue = true;
                 cb = null;
-            } else if(cb !== undefined && toString.call(cb) != "[object Function]"){
+            } else if(cb !== undefined && Object.prototype.toString.call(cb) != "[object Function]"){
                 cb = null;
             }
 
@@ -111,7 +124,7 @@
             subscribersLen= subscribers ? subscribers.length : 0 ;
 
             // if the user wants the messages to be queued
-            if(instance.settings.queueMessages === true && !avoidAddingToMessageQeue) {
+            if(instance.settings.queueMessages === true && !avoidAddingToMessageQueue) {
                 // if the message queue for this particular message does not exist yet
                 if(!instance.messageQueue.hasOwnProperty(message)) {
                     // create it
@@ -162,7 +175,7 @@
                 while(subscribersLen--) {
                     // deliver message whenever possible, without blocking any
                     // other js or the  browser UI ( http://ejohn.org/blog/how-javascript-timers-work/ )
-                    setTimeout((function(subscriber, data){
+                    timeoutId = setTimeout((function(subscriber, data){
                         return function(){
                             deliverMessage(subscriber, data);
 
@@ -171,6 +184,8 @@
                             }
                         };
                     })(subscribers[subscribersLen], data), 0);
+
+                    instance.asyncTimeoutIds.push(timeoutId);
                 }
             }
 
@@ -220,6 +235,9 @@
             // seconds after which the message queue will be cleared upon instantiation
             // very useful to do a garbage collection of useless messages published
             ,clearMessageQueueEvery: 360 // every 5 minutes
+
+            // if set Pony will accept only messages existing inside this message list
+            ,messageList: null
         }
 
     // utility functions
@@ -236,11 +254,16 @@
 
             return settings;
         }
+        ,checkMessageValidity = function(instance, message){
+            if(message === undefined || instance.messages && !(message in instance.messages)){
+                throw Error("Message " + message + " not accepted by this Pony instance. List of available messages: " + instance.settings.messageList);
+            }
+        }
         ;
 
     Pony.prototype= {
 
-        // force contructor to be the Pony function
+        // force constructor to be the Pony function
         constructor: Pony
         /**
          *  Pony.subscribe( message [, *args ] ) -> String | Array
@@ -256,15 +279,15 @@
                 ,subscriptionTokenList= []
                 ,i
                 ,subscribersLen
-                ,pony= this
                 ,returnSubscriptionToken
                 ,messageQueueLen
                 ;
+            checkMessageValidity(this, message);
 
             if(!this.subscriptionList.hasOwnProperty(message)) {
                 this.subscriptionList[ message ]= [];
             }
-            console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", message, this.messageQueue);
+
             if(this.settings.queueMessages === true && this.messageQueue[ message ] && this.messageQueue[ message ].length) {
                 messageQueueLen= this.messageQueue[ message ].length;
                 // deliver previously published messages to new subscribers, asynchronously by default
@@ -309,6 +332,10 @@
                 ,unsubscribedCallbacks
                 ;
 
+            if(!subscriptionToken){
+                return;
+            }
+
             if(!subscriptionToken.length) {
                 unsubscribedCallbacks= unsubscribeTokenFromInstance(this, subscriptionToken);
             } else {
@@ -338,7 +365,7 @@
             var
                 data= Array.prototype.slice.call(arguments).slice(1)
                 ;
-            console.log("ccccccccccccccccccccccccccccccccccccccc", message, this.messageQueue);
+            checkMessageValidity(this, message);
 
             // TODO: callback as argument or as attribute of the passed publicationObject?
 
@@ -360,6 +387,7 @@
             var
                 data= Array.prototype.slice.call(arguments).slice(1)
                 ;
+            checkMessageValidity(this, message);
 
             return publish({
                 instance: this
@@ -410,6 +438,26 @@
             this.messageQueue= {};
 
             return this;
+        }
+
+
+        /**
+         *  Pony.destroy( ) -> Pony instance
+         *  It removes any trace of this Pony instance from the memory
+         **/
+        ,destroy: function(){
+            var name,
+                len = this.asyncTimeoutIds.length;
+
+            while(len--){
+                clearTimeout(this.asyncTimeoutIds[len]);
+            }
+
+            for(name in this){
+                if(this.hasOwnProperty(name)){
+                    delete this[name];
+                }
+            }
         }
     };
 
